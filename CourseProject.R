@@ -15,10 +15,18 @@ colnames(dataset) <- c("Age", "WorkClass", "fnlwgt", "Education", "EducationNum"
 
 # Replace ? with and remove lines missing values
 dataset[dataset == "?"] <- NA
+dataset$Income <- replace(dataset$Income, dataset$Income=='<=50K', 0)
+dataset$Income <- replace(dataset$Income, dataset$Income=='>50K', 1)
 noNaValues <- na.omit(dataset)
 
 # Summarize Data
-
+table(noNaValues$WorkClass)
+table(noNaValues$Occupation)
+table(noNaValues$Education)
+table(noNaValues$MaritalStatus)
+table(noNaValues$Race)
+table(noNaValues$Sex)
+table(noNaValues$NativeCountry)
 
 # Plotting
 ggplot(noNaValues, aes(y=Age, x=Income, fill=Income)) + geom_boxplot() + ggtitle("Average Age of Each Income Class")
@@ -30,10 +38,21 @@ ggplot(noNaValues, aes(x=Income, fill=Occupation)) + geom_bar(position="stack", 
 ggplot(noNaValues, aes(x=Income, fill=Relationship)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Familial Relationship Status per Income Class")
 # This one is kind of insane - we need a better way of showing: ggplot(noNaValues, aes(x=Income, fill=NativeCountry)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Country of Origin per Income Class")
 # I tried this one as boxplot and scatter plot and it just looks jank - ggplot(noNaValues, aes(x=Income, y=HoursPerWeek, fill=Income)) + geom_boxplot()
-# Normalize Data #
-##################
 
+# Normalize Data
+## Created a test Dataset to try this on 
+testSet <- noNaValues
+### testSet$NativeCountry[testSet$NativeCountry !="United-States"] <- "Outside-US"
+testSet$NativeCountry[testSet$NativeCountry !="United-States"] <- 1
+testSet$NativeCountry[testSet$NativeCountry == "UnitedStates"] <- 0
 
+testSet$Sex[testSet$Sex == "Male"] <- 0
+testSet$Sex[testSet$Sex == "Female"] <- 1
 
-dataset$Income <- replace(dataset$Income, dataset$Income=='<=50K', 0)
-dataset$Income <- replace(dataset$Income, dataset$Income=='>50K', 1)
+testSet$Education <- as.factor(testSet$Education)
+testSet$Education <- sapply(testSet$Education, unclass)
+maxEducation <- as.integer(max(testSet$Education))
+testSet <- transform(testSet, Education = Education / maxEducation, 1)
+
+maxAge <- max(testSet$Age)
+testSet <- transform(testSet, Age = Age / maxAge)
