@@ -5,8 +5,14 @@
 # Install Packages
 install.packages("ggplot2")
 install.packages("dplyr")
+install.packages("naivebayes")
+install.packages("party")
+install.packages("randomForest")
 library(ggplot2)
 library(dplyr)
+library(naivebayes)
+library(randomForest)
+library(party)
 
 # set your working directory to the current file directory 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -89,12 +95,36 @@ testSet$Occupation <- sapply(testSet$Occupation, unclass)
 maxOccupation <- as.integer(max(testSet$Occupation))
 testSet <- transform(testSet, Occupation = Occupation/maxOccupation, 1)
 
+# Decision Tree
+
 index <- sample(2, nrow(testSet), replace=TRUE, prob=c(0.8, 0.2))
 T1Set <- testSet[index==1,]
 T2Set <- testSet[index==2,]
 Formula <- Income ~ Age + WorkClass + Education + MaritalStatus + Occupation + Sex
 cTree <- ctree(Formula, data=T1Set)
 train_predict <- predict(cTree, T1Set)
-table(train_predict, T1Set$Income
+table(train_predict, T1Set$Income)
 test_predict <- predict(cTree, T2Set)
 table(test_predict, T2Set$Income)
+
+# Random Forest
+
+rf <- randomForest(formula=Formula, data=T1Set)
+plot(rf)
+
+train_predict <- predict(rf, T1Set)
+table(train_predict, T1Set$Income)
+test_predict <- predict(rf, T2Set)
+table(test_predict, T2Set$Income)
+
+# Naive Bayes
+
+nb <- randomForest(formula=Formula, data=T1Set)
+plot(nb)
+
+train_predict <- predict(nb, T1Set)
+table(train_predict, T1Set$Income)
+test_predict <- predict(nb, T2Set)
+table(test_predict, T2Set$Income)
+
+
