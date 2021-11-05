@@ -113,9 +113,11 @@ rf <- randomForest(formula=Formula, data=T1Set)
 plot(rf)
 
 train_predict <- predict(rf, T1Set)
-table(train_predict, T1Set$Income)
+t1 <- table(train_predict, T1Set$Income)
+1 - sum(diag(t1)) / sum(t1)
 test_predict <- predict(rf, T2Set)
-table(test_predict, T2Set$Income)
+t2 <- table(test_predict, T2Set$Income)
+1 - sum(diag(t2)) / sum(t2)
 
 # Naive Bayes
 
@@ -123,8 +125,10 @@ nb <- randomForest(formula=Formula, data=T1Set)
 plot(nb)
 
 train_predict <- predict(nb, T1Set)
-table(train_predict, T1Set$Income)
+t1 <- table(train_predict, T1Set$Income)
+1 - sum(diag(t1)) / sum(t1)
 test_predict <- predict(nb, T2Set)
-table(test_predict, T2Set$Income)
+t2 <- table(test_predict, T2Set$Income)
+1 - sum(diag(t2)) / sum(t2)
 
 
