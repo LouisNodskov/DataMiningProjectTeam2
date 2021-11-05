@@ -121,7 +121,7 @@ t2 <- table(test_predict, T2Set$Income)
 
 # Naive Bayes
 
-nb <- randomForest(formula=Formula, data=T1Set)
+nb <- naive_bayes(formula=Formula, data=T1Set)
 plot(nb)
 
 train_predict <- predict(nb, T1Set)
