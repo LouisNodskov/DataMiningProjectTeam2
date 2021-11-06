@@ -21,114 +21,143 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 dataset <- read.csv("Data-Files/Census-Project.data", header = FALSE)
 colnames(dataset) <- c("Age", "WorkClass", "fnlwgt", "Education", "EducationNum", "MaritalStatus", "Occupation", "Relationship", "Race", "Sex", "CapitalGain", "CapitalLoss", "HoursPerWeek", "NativeCountry", "Income")
 
-# Replace ? with and remove lines missing values
+# Replace ? NA with and remove lines missing values
 dataset[dataset == "?"] <- NA
 #dataset$Income <- replace(dataset$Income, dataset$Income=='<=50K', 0)
 #dataset$Income <- replace(dataset$Income, dataset$Income=='>50K', 1)
 dataset$Income <- as.factor(dataset$Income)
-noNaValues <- na.omit(dataset)
+initialSet <- na.omit(dataset)
+
+# Consolidating Data Attributes to be used in analysis
+## Education
+LessThanHS <- c("Preschool", "1st-4th", "5th-6th", "7th-8th")
+initialSet$Education[initialSet$Education %in% LessThanHS] <- "LessThanHS"
+someHS <- c("9th", "10th", "11th", "12th")
+initialSet$Education[initialSet$Education %in% someHS] <- "Some-HS"
+Assoc <- c("Assoc-acdm", "Assoc-voc")
+initialSet$Education[initialSet$Education %in% Assoc] <- "Assoc"
+initialSet$Education <- as.factor(initialSet$Education)
+initialSet$Education <- factor(initialSet$Education, levels = c("LessThanHS", "Some-HS", "HS-grad", "Some-college", "Assoc", "Prof-school", "Bachelors", "Masters", "Doctorate"))
+## MaritalStatus
+Married <- c("Married-civ-spouse", "Married-AF-spouse", "Married-spouse-absent")
+initialSet$MaritalStatus[initialSet$MaritalStatus %in% Married] <- "Married"
+initialSet$MaritalStatus <- as.factor(initialSet$MaritalStatus)
+## Work Class
+selfempClass <- c("Self-emp-inc", "Self-emp-not-inc")
+initialSet$WorkClass[initialSet$WorkClass %in% selfempClass] <- "Self-emp"
+govClass <- c("State-gov", "Federal-gov", "Local-gov")
+initialSet$WorkClass[initialSet$WorkClass %in% govClass] <- "Government"
+initialSet$WorkClass <- as.factor(initialSet$WorkClass)
+## Occupation
+initialSet$Occupation <- as.factor(initialSet$Occupation)
+
 
 # Summarize Data
-table(noNaValues$WorkClass)
-table(noNaValues$Occupation)
-table(noNaValues$Education)
-table(noNaValues$MaritalStatus)
-table(noNaValues$Race)
-table(noNaValues$Sex)
-table(noNaValues$NativeCountry)
+table(initialSet$WorkClass)
+table(initialSet$Occupation)
+table(initialSet$Education)
+table(initialSet$MaritalStatus)
+table(initialSet$Race)
+table(initialSet$Sex)
+table(initialSet$NativeCountry)
 
 # Plotting
-ggplot(noNaValues, aes(y=Age, x=Income, fill=Income)) + geom_boxplot() + ggtitle("Average Age of Each Income Class")
-ggplot(noNaValues, aes(y=Race, fill=Race)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Races in Dataset")
-ggplot(noNaValues, aes(x=Income, fill=Race)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Races in Dataset based on Income Class")
-ggplot(noNaValues, aes(x=Income, fill=MaritalStatus)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Marital Status per Income Class")
-ggplot(noNaValues, aes(x=Income, fill=WorkClass)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Work-Classes per Income Class")
-ggplot(noNaValues, aes(x=Income, fill=Occupation)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Occupations per Income Class")
-ggplot(noNaValues, aes(x=Income, fill=Relationship)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Familial Relationship Status per Income Class")
-# This one is kind of insane - we need a better way of showing: ggplot(noNaValues, aes(x=Income, fill=NativeCountry)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Country of Origin per Income Class")
-# I tried this one as boxplot and scatter plot and it just looks jank - ggplot(noNaValues, aes(x=Income, y=HoursPerWeek, fill=Income)) + geom_boxplot()
+ggplot(initialSet, aes(y=Age, x=Income, fill=Income)) + geom_boxplot() + ggtitle("Age Distribution in Each Income Class")
+ggplot(initialSet, aes(x=Income, y=Age, fill=Income)) + geom_violin(trim = FALSE, adjust=2) + geom_boxplot(width=0.1)
+ggplot(initialSet, aes(x=Race, fill=Race)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Races in Dataset")
+ggplot(initialSet, aes(x=Sex, fill=Sex)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Sexes in Dataset")
+ggplot(initialSet, aes(x=Education, fill=Education)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Education in Dataset")
+ggplot(initialSet, aes(x=MaritalStatus, fill=MaritalStatus)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Marital Status in Dataset")
+ggplot(initialSet, aes(x=WorkClass, fill=WorkClass)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Work Class in Dataset")
+ggplot(initialSet, aes(x=Occupation, fill=Occupation)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Occupation in Dataset")
+ggplot(initialSet, aes(x=WorkClass, fill=Occupation)) + geom_bar(position="stack", stat="count", color="black") + ggtitle("Distribution of Occupation Per Work Class")
 
-# Normalize Data
+ggplot(initialSet, aes(x=Income, fill=Race)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Races in Dataset based on Income Class")
+ggplot(initialSet, aes(x=Race, fill=Income)) + geom_bar(position="dodge", stat="count") + ggtitle("Distribution of Races in Dataset based on Income Class")
+
+ggplot(initialSet, aes(x=Income, fill=Sex)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Sexes in Dataset based on Income Class")
+ggplot(initialSet, aes(x=Sex, fill=Income)) + geom_bar(position="dodge", stat="count") + ggtitle("Distribution of Sexes in Dataset based on Income Class")
+
+ggplot(initialSet, aes(x=Income, fill=MaritalStatus)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Marital Status per Income Class")
+ggplot(initialSet, aes(x=MaritalStatus, fill=Income)) + geom_bar(position="dodge", stat="count") + ggtitle("Distribution of Marital Status per Income Class")
+
+ggplot(initialSet, aes(x=Income, fill=WorkClass)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Work-Classes per Income Class")
+ggplot(initialSet, aes(x=WorkClass, fill=Income)) + geom_bar(position="dodge", stat="count") + ggtitle("Distribution of Work-Classes per Income Class")
+
+ggplot(initialSet, aes(x=Income, fill=Occupation)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Occupations per Income Class")
+ggplot(initialSet, aes(x=Occupation, fill=Income)) + geom_bar(position="dodge", stat="count") + ggtitle("Distribution of Occupations per Income Class")
+
+ggplot(initialSet, aes(x=Income, fill=Education)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Education per Income Class")
+ggplot(initialSet, aes(x=Education, fill=Income)) + geom_bar(position="dodge", stat="count") + ggtitle("Distribution of Education per Income Class")
+
+#ggplot(initialSet, aes(x=Income, fill=Relationship)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Familial Relationship Status per Income Class")
+# This one is kind of insane - we need a better way of showing: ggplot(initialSet, aes(x=Income, fill=NativeCountry)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Country of Origin per Income Class")
+# I tried this one as boxplot and scatter plot and it just looks jank - ggplot(initialSet, aes(x=Income, y=HoursPerWeek, fill=Income)) + geom_boxplot()
+
+# Transform Categorical Data to Numeric Data
 ## Created a test Dataset to try this on 
-testSet <- noNaValues
-### testSet$NativeCountry[testSet$NativeCountry !="United-States"] <- "Outside-US"
-testSet$NativeCountry[testSet$NativeCountry !="United-States"] <- 1
-testSet$NativeCountry[testSet$NativeCountry == "United-States"] <- 0
+analysisSet <- initialSet
+### analysisSet$NativeCountry[analysisSet$NativeCountry !="United-States"] <- "Outside-US"
+analysisSet$NativeCountry[analysisSet$NativeCountry !="United-States"] <- 1
+analysisSet$NativeCountry[analysisSet$NativeCountry == "United-States"] <- 0
 
-testSet$Sex[testSet$Sex == "Male"] <- 0.0
-testSet$Sex[testSet$Sex == "Female"] <- 1.0
-testSet$Sex <- as.integer(testSet$Sex)
+analysisSet$Sex[analysisSet$Sex == "Male"] <- 0.0
+analysisSet$Sex[analysisSet$Sex == "Female"] <- 1.0
+analysisSet$Sex <- as.integer(analysisSet$Sex)
 
-LessThanHS <- c("Preschool", "1st-4th", "5th-6th", "7th-8th")
-testSet$Education[testSet$Education %in% LessThanHS] <- "LessThanHS"
-someHS <- c("9th", "10th", "11th", "12th")
-testSet$Education[testSet$Education %in% someHS] <- "Some-HS"
-Assoc <- c("Assoc-acdm", "Assoc-voc")
-testSet$Education[testSet$Education %in% Assoc] <- "Assoc"
-testSet$Education <- as.factor(testSet$Education)
-testSet$Education <- factor(testSet$Education, levels = c("LessThanHS", "Some-HS", "HS-grad", "Some-college", "Assoc", "Prof-school", "Bachelors", "Masters", "Doctorate"))
-testSet$Education <- sapply(testSet$Education, unclass)
-maxEducation <- as.integer(max(testSet$Education))
-testSet <- transform(testSet, Education = Education / maxEducation, 1)
+analysisSet$Education <- sapply(analysisSet$Education, unclass)
+maxEducation <- as.integer(max(analysisSet$Education))
+analysisSet <- transform(analysisSet, Education = Education / maxEducation, 1)
 
-maxAge <- max(testSet$Age)
-testSet <- transform(testSet, Age = Age / maxAge)
+maxAge <- max(analysisSet$Age)
+analysisSet <- transform(analysisSet, Age = Age / maxAge)
 
-Married <- c("Married-civ-spouse", "Married-AF-spouse", "Married-spouse-absent")
-testSet$MaritalStatus[testSet$MaritalStatus %in% Married] <- "Married"
-testSet$MaritalStatus <- as.factor(testSet$MaritalStatus)
-testSet$MaritalStatus <- sapply(testSet$MaritalStatus, unclass)
-maxMaritalStatus <- as.integer(max(testSet$MaritalStatus))
-testSet <- transform(testSet, MaritalStatus = MaritalStatus/maxMaritalStatus, 1)
+analysisSet$MaritalStatus <- sapply(analysisSet$MaritalStatus, unclass)
+maxMaritalStatus <- as.integer(max(analysisSet$MaritalStatus))
+analysisSet <- transform(analysisSet, MaritalStatus = MaritalStatus/maxMaritalStatus, 1)
 
-selfempClass <- c("Self-emp-inc", "Self-emp-not-inc")
-testSet$WorkClass[testSet$WorkClass %in% selfempClass] <- "Self-emp"
-govClass <- c("State-gov", "Federal-gov", "Local-gov")
-testSet$WorkClass[testSet$WorkClass %in% govClass] <- "Government"
-testSet$WorkClass <- as.factor(testSet$WorkClass)
-testSet$WorkClass <- sapply(testSet$WorkClass, unclass)
-maxWorkClass <- as.integer(max(testSet$WorkClass))
-testSet <- transform(testSet, WorkClass = WorkClass/maxWorkClass, 1)
+analysisSet$WorkClass <- sapply(analysisSet$WorkClass, unclass)
+maxWorkClass <- as.integer(max(analysisSet$WorkClass))
+analysisSet <- transform(analysisSet, WorkClass = WorkClass/maxWorkClass, 1)
 
-testSet$Occupation <- as.factor(testSet$Occupation)
-testSet$Occupation <- sapply(testSet$Occupation, unclass)
-maxOccupation <- as.integer(max(testSet$Occupation))
-testSet <- transform(testSet, Occupation = Occupation/maxOccupation, 1)
+analysisSet$Occupation <- sapply(analysisSet$Occupation, unclass)
+maxOccupation <- as.integer(max(analysisSet$Occupation))
+analysisSet <- transform(analysisSet, Occupation = Occupation/maxOccupation, 1)
 
 # Decision Tree
 
-index <- sample(2, nrow(testSet), replace=TRUE, prob=c(0.8, 0.2))
-T1Set <- testSet[index==1,]
-T2Set <- testSet[index==2,]
+index <- sample(2, nrow(analysisSet), replace=TRUE, prob=c(0.8, 0.2))
+TrainingSet <- analysisSet[index==1,]
+TestSet <- analysisSet[index==2,]
 Formula <- Income ~ Age + WorkClass + Education + MaritalStatus + Occupation + Sex
-cTree <- ctree(Formula, data=T1Set)
-train_predict <- predict(cTree, T1Set)
-table(train_predict, T1Set$Income)
-test_predict <- predict(cTree, T2Set)
-table(test_predict, T2Set$Income)
+cTree <- ctree(Formula, data=TrainingSet)
+train_predict <- predict(cTree, TrainingSet)
+table(train_predict, TrainingSet$Income)
+test_predict <- predict(cTree, TestSet)
+table(test_predict, TestSet$Income)
 
 # Random Forest
 
-rf <- randomForest(formula=Formula, data=T1Set)
+rf <- randomForest(formula=Formula, data=TrainingSet)
 plot(rf)
 
-train_predict <- predict(rf, T1Set)
-t1 <- table(train_predict, T1Set$Income)
+train_predict <- predict(rf, TrainingSet)
+t1 <- table(train_predict, TrainingSet$Income)
 1 - sum(diag(t1)) / sum(t1)
-test_predict <- predict(rf, T2Set)
-t2 <- table(test_predict, T2Set$Income)
+test_predict <- predict(rf, TestSet)
+t2 <- table(test_predict, TestSet$Income)
 1 - sum(diag(t2)) / sum(t2)
 
 # Naive Bayes
 
-nb <- naive_bayes(formula=Formula, data=T1Set)
+nb <- naive_bayes(formula=Formula, data=TrainingSet)
 plot(nb)
 
-train_predict <- predict(nb, T1Set)
-t1 <- table(train_predict, T1Set$Income)
+train_predict <- predict(nb, TrainingSet)
+t1 <- table(train_predict, TrainingSet$Income)
 1 - sum(diag(t1)) / sum(t1)
-test_predict <- predict(nb, T2Set)
-t2 <- table(test_predict, T2Set$Income)
+test_predict <- predict(nb, TestSet)
+t2 <- table(test_predict, TestSet$Income)
 1 - sum(diag(t2)) / sum(t2)
 
 
