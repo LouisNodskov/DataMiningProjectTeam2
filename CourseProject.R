@@ -63,7 +63,7 @@ table(initialSet$NativeCountry)
 
 # Plotting
 ggplot(initialSet, aes(y=Age, x=Income, fill=Income)) + geom_boxplot() + ggtitle("Age Distribution in Each Income Class")
-ggplot(initialSet, aes(x=Income, y=Age, fill=Income)) + geom_violin(trim = FALSE, adjust=2) + geom_boxplot(width=0.1)
+ggplot(initialSet, aes(x=Income, y=Age, fill=Income)) + geom_violin(trim = FALSE, adjust=2) + geom_boxplot(width=0.1, color="grey", fill="white")
 ggplot(initialSet, aes(x=Race, fill=Race)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Races in Dataset")
 ggplot(initialSet, aes(x=Sex, fill=Sex)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Sexes in Dataset")
 ggplot(initialSet, aes(x=Education, fill=Education)) + geom_bar(position="stack", stat="count") + ggtitle("Distribution of Education in Dataset")
